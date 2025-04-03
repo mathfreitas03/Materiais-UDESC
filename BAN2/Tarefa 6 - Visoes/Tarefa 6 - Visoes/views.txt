@@ -1,0 +1,26 @@
+-- 1)      Mostre o nome e a função dos mecânicos.
+create view nome_funcao as select nome, funcao from mecanico;
+
+-- 2)      Mostre o modelo e a marca dos veículos dos clientes.
+create view modelo_marca as select modelo, marca from cliente cli join veiculo v using (codc);
+
+-- 3)      Mostre o nome dos mecânicos, o nome dos clientes, o modelo dos veículos e a data e hora dos consertos realizados.
+create view cliente_conserto as select m.nome as nome_mecanico, cli.nome as nome_cliente, modelo, marca, data, hora from conserto join mecanico m using(codm) join veiculo using (codv) join cliente cli using (codc);
+
+-- 4)      Mostre o ano dos veículos e a média de quilometragem para cada ano.
+create view quilometragem_ano as select ano, avg(quilometragem) from veiculo group by (ano);
+
+-- 5)      Mostre o nome dos mecânicos e o total de consertos feitos por um mecânico em cada dia.
+create view mecanico_conserto_dia as select nome as nome_mecanico, count(*) as consertos_dia, data from mecanico join conserto using (codm) group by (data, codm);
+
+-- 6)      Mostre o nome dos setores e o total de consertos feitos em um setor em cada dia.
+create view setor_conserto as select setor.nome as nome_setor, count(*) as consertos_dia, data from mecanico join conserto using(codm) join setor using(cods) group by (setor.cods, data);
+
+-- 7)      Mostre o nome das funções e o número de mecânicos que têm uma destas funções.
+create view funcoes as select funcao, count(*) as mecanicos_alocados from mecanico group by (funcao);
+
+-- 8)      Mostre o nome dos mecânicos e suas funções e, para os mecânicos que estejam alocados a um setor, informe também o número e nome do setor.
+create view mecanico_detalhes as select m.nome as nome_mecanico, funcao, s.cods as numero_setor, s.nome as nome_setor from mecanico m left outer join setor s using (cods);
+
+-- 9)      Mostre o nome das funções dos mecânicos e a quantidade de consertos feitos agrupado por cada função.
+create view consertos_funcao as select funcao, count(*) as quantidade_consertos from mecanico join conserto using(codm) group by (funcao);

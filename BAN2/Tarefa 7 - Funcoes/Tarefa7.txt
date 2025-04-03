@@ -1,0 +1,108 @@
+-- 1)      Função para inserção de um mecânico.
+
+create or replace function insere_mecanico(cpf char(11), nome varchar(50), idade integer, endereco varchar(500), cidade varchar(500), funcao varchar(50), cods integer) returns void as
+$$
+declare
+	a integer;
+begin
+	select 1 + max(codm) into a from mecanico;
+
+	insert into mecanico (codm, cpf, nome, idade, endereco, cidade, funcao, cods) values (a, $1, $2, $3, $4, $5, $6, $7);
+	return;
+end
+$$
+language plpgsql;
+
+
+-- 2)      Função para exclusão de um mecânico. 
+
+create or replace function exclui_mecanico(codm integer) returns void as
+$$
+declare
+	cod_a_excluir alias for $1;
+begin
+	delete from mecanico where mecanico.codm = cod_a_excluir;
+	return;
+end
+$$
+language plpgsql;
+
+-- 3)      Função única para inserção, atualizar e exclusão de um cliente.
+create or replace function cud_cliente(opt integer, pcodc integer, cpf char(11), nome varchar(50), idade integer, endereco varchar(500), cidade varchar(500)) returns void as
+$$
+declare
+	pcodc alias for $2;
+	opt alias for $1;
+begin
+	-- 0 Insere
+	if opt=0 then
+		select 1 + max(codc) from cliente into pcodc;
+		insert into cliente (codc, cpf, nome, idade, endereco, cidade) values (pcodc, $3, $4, $5, $6, $7);
+	end if;
+	-- 1 Atualiza
+	if opt = 1 then
+		update cliente set
+		cpf = $3,
+		nome = $4,
+		idade = $5,
+		endereco = $6,
+		cidade = $7
+		where cliente.codc = pcodc;
+	end if;
+	-- 2 Exclui
+	if opt = 2 then
+		delete from cliente where codc = pcodc;
+	end if;
+end
+$$
+language plpgsql;
+
+-- select * from cliente
+-- select cud_cliente(0, 412421421, '01234567891', 'Joao Ninguem', 25, 'aofjojfoawj', 'jfiajiajdisa');
+-- select cud_cliente(1, 8, '01234567891', 'Joao Ninguem da Silva', 25, 'aofjojfoawj', 'jfiajiajdisa');
+-- select cud_cliente(2, 8, '01234567891', 'Joao Ninguem da Silva', 25, 'aofjojfoawj', 'jfiajiajdisa');
+
+-- 4)      Função que limite o cadastro de no máximo 10 setores na oficina mecânica.
+
+create function max_setores() returns int as
+$$
+begin
+	
+end
+$$
+language plpgsql;
+
+-- 6)      Função para calcular a média geral de idade dos Mecânicos e Clientes.
+create or replace function media_geral() returns real as
+$$
+declare
+	soma_idade_cliente integer := sum(idade) from mecanico;
+	soma_idade_mecanico integer := sum (idade) from cliente;
+	qtd_clientes integer := count(*) from cliente;
+	qtd_mecanicos integer := count(*) from mecanico;
+begin
+	return (soma_idade_cliente + soma_idade_mecanico)/(qtd_clientes + qtd_mecanicos);
+end
+$$
+language plpgsql;
+
+-- 7)      Função única que permita fazer a exclusão de um Setor, Mecânico, Cliente ou Veículo.
+
+create or replace function exclui(tabela integer, codigo integer) returns void as
+$$
+declare 
+	tabela alias for $1;
+begin
+	if tabela = 0 then
+        delete from setor where cods = codigo;
+    elsif tabela = 1 then
+        delete from mecanico where codm = codigo;
+    elsif tabela = 2 then
+        delete from cliente where codc = codigo;
+    elsif tabela = 3 then
+        delete from veiculo where codv = codigo;
+    end if;
+	return;
+end
+$$
+language plpgsql;

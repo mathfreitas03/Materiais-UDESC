@@ -1,0 +1,77 @@
+create table cliente (
+	cod_cliente int primary key,
+	nome varchar(20),
+	sobrenome varchar(20),
+	rua varchar(30),
+	bairro varchar(20),
+	cidade varchar(20),
+	numero int
+);
+
+create table emprestimo (
+	cod_emprestimo int primary key,
+	cod_cliente int references cliente (cod_cliente) not null,
+	data_emprestimo date
+);
+
+create table midia (
+	num_midia int primary key not null
+);
+
+create table categoria (
+	numero_cat int primary key,
+	nome varchar(50)
+);
+
+create table filme (
+	cod_filme int primary key,
+	titulo varchar(50),
+	categoria int references categoria (numero_cat)
+);
+
+create table fita (
+	numero int primary key references midia (num_midia),
+	filme int references filme (cod_filme)
+);
+
+create table musica (
+	cod_musica int primary key,
+	artista int references artista(cod_artista),
+	titulo varchar(50)
+);
+
+create table estilo (
+	cod_estilo int primary key,
+	nome_estilo varchar(50)
+);
+
+create table artista (
+	cod_artista int primary key,
+	nome varchar(50),
+	data_nasc date,
+	estilo int references estilo(cod_estilo)
+);
+
+create table vinil (
+	numero int primary key references midia(num_midia)
+);
+
+create table vinilmusica (
+	cod_musica int references musica(cod_musica),
+	cod_vinil int references vinil(numero),
+	primary key (cod_musica, cod_vinil)
+);
+
+create table ator (
+	cod_ator int primary key,
+	nome varchar(50),
+	data_nasc date
+);
+
+create table atoresfilmes (
+	cod_ator int references ator(cod_ator),
+	cod_filme int references filme(cod_filme),
+	primary key (cod_ator, cod_filme)
+);
+
+

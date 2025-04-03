@@ -1,0 +1,93 @@
+create table curso (
+	sigla_curso char(10) primary key,
+	nome varchar(100),
+	titulacao varchar(100)
+);
+
+create table aluno (
+	cpf char(11) primary key,
+	nome varchar(100),
+	rua varchar(255),
+	numero int,
+	estado char(2),
+	cidade varchar(100),
+	cep int
+);
+
+create table inscricao (
+	matricula int primary key,
+	sigla_curso char(10) references curso (sigla_curso),
+	cpf char(11) references aluno (cpf)
+);
+
+create table area (
+	cod_area int primary key,
+	descricao varchar(100)
+);
+
+create table professor (
+	reg_mec int primary key,
+	nome varchar(100),
+	rua varchar(100),
+	numero int,
+	cidade varchar(100),
+	estado char(2),
+	cep int
+);
+
+create table responsavel (
+	reg_mec int references professor (reg_mec),
+	cod_area int references area (cod_area),
+	primary key (reg_mec, cod_area),
+	ate date
+);
+
+create table titulo (
+	reg_mec int references professor (reg_mec),
+	cod_area int references area (cod_area),
+	data_da_titulacao date,
+	primary key (reg_mec, cod_area)
+);
+
+create table disciplina (
+	sigla_disc char(10) primary key,
+	nome varchar(100),
+	carga_horaria int
+);
+
+create table leciona (
+	sigla_disc char(10) references disciplina (sigla_disc),
+	reg_mec int references professor (reg_mec),
+	ano date,
+	semestre int,
+	primary key (sigla_disc, reg_mec, ano, semestre)
+);
+
+create table habilitacao (
+	sigla_disc char(10) references disciplina (sigla_disc),
+	reg_mec int references professor (reg_mec),
+	primary key (sigla_disc, reg_mec)
+);
+
+create table matricula (
+	ano date,
+	matricula int references inscricao (matricula),
+	sigla_disc char(10) references disciplina (sigla_disc),
+	semestre int,
+	primary key (ano, matricula, sigla_disc, semestre)
+);
+
+create table grade (
+	sigla_curso char(10) references curso (sigla_curso),
+	sigla_disc char(10) references disciplina (sigla_disc),
+	primary key (sigla_curso, sigla_disc)
+);
+
+create table requisito (
+	sigla_disc_req char(10) references grade (sigla_disc) on update cascade,
+	sigla_curso_req char(10) references grade (sigla_curso) on update cascade,
+	sigla_disc char(10) references grade (sigla_disc) on update cascade,
+	sigla_curso char(10) references grade (sigla_curso) on update cascade,
+	primary key (sigla_disc_req, sigla_curso_req, sigla_disc, sigla_curso)
+);
+

@@ -1,0 +1,129 @@
+create table pais (
+	cod_pais int primary key,
+	nome_pais varchar(50)
+);
+
+create table artista (
+	cod_artista int primary key,
+	nome varchar(50),
+	data_nascimento date,
+	data_morte date,
+	descricao text,
+	origem int references pais (cod_pais)
+);
+
+create table periodo (
+	cod_periodo int primary key,
+	nome_periodo varchar(50)
+);
+
+create table exposicao (
+	cod_exposicao int primary key,
+	nome varchar(50),
+	data_inicio date,
+	data_final date
+);
+
+create table estilo (
+	cod_estilo int primary key,
+	nome varchar(50)
+);
+
+create table colecao (
+	cod_colecao int primary key
+);
+
+create table colecao_permanente (
+	cod_colecao int primary key,
+	foreign key (cod_colecao) references colecao (cod_colecao)
+);
+
+create table tipo_colecao (
+	cod_tipo_colecao int primary key,
+	nome varchar(50)
+);
+
+create table colecao_externa (
+	cod_colecao int primary key,
+	nome varchar(50),
+	descricao text,
+	rua varchar(50),
+	numero int,
+	bairro varchar(50),
+	cidade varchar(50),
+	estado varchar(50),
+	pais int references pais (cod_pais),
+	pessoa_contato varchar(50),
+	telefone varchar(20),
+	tipo_colecao int references tipo_colecao (cod_tipo_colecao)
+);
+
+create table colecao_emprestimo (
+	cod_colecao int primary key,
+	foreign key (cod_colecao) references colecao (cod_colecao),
+	cod_colecao_externa int references colecao_externa (cod_colecao),
+	data_emprestimo date,
+	data_devolucao date
+);
+
+create table objeto_arte (
+	cod_objeto_arte int primary key,
+	ano int,
+	titulo varchar(50),
+	descricao text,
+	artista int references artista(cod_artista),
+	pais int references pais(cod_pais),
+	estilo int references estilo(cod_estilo),
+	tipo int, -- valores devem ser definidos pra cada tipo, ex: pintura = 1, escultura = 2, etc
+	colecao int references colecao (cod_colecao)
+);
+
+create table suporte (
+	cod_suporte int primary key,
+	nome varchar(50)
+);
+
+create table tipo_tinta (
+	cod_tipo_tinta int primary key,
+	nome varchar(50)
+);
+
+create table material (
+	cod_material int primary key,
+	nome varchar(50)
+);
+
+create table tipo (
+	cod_tipo int primary key,
+	nome varchar (50)
+);
+
+create table pintura (
+	cod_pintura int primary key references objeto_arte (cod_objeto_arte),
+	tinta int references tipo_tinta (cod_tipo_tinta)
+);
+
+create table escultura (
+	cod_escultura int primary key references objeto_arte (cod_objeto_arte),
+	altura real,
+	peso real,
+	material int references material (cod_material)
+);
+
+create table estatuaria (
+	cod_estatuaria int primary key references objeto_arte (cod_objeto_arte),
+	altura real,
+	peso real,
+	material int references material (cod_material)
+);
+
+create table objeto_arte_outros (
+	cod_outros int primary key references objeto_arte (cod_objeto_arte),
+	tipo int references tipo (cod_tipo)
+);
+
+create table objeto_exposicao (
+	cod_exposicao int references exposicao(cod_exposicao),
+	cod_objeto int references objeto_arte(cod_objeto_arte),
+	primary key (cod_exposicao, cod_objeto)
+);
