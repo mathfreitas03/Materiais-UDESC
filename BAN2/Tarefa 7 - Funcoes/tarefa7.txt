@@ -1,0 +1,217 @@
+-- 1)      Função para inserção de um mecânico.
+
+create or replace function insere_mecanico(cpf char(11), nome varchar(50), idade integer, endereco varchar(500), cidade varchar(500), funcao varchar(50), cods integer) returns void as
+$$
+declare
+	a integer;
+begin
+	select 1 + max(codm) into a from mecanico;
+
+	insert into mecanico (codm, cpf, nome, idade, endereco, cidade, funcao, cods) values (a, $1, $2, $3, $4, $5, $6, $7);
+	return;
+end
+$$
+language plpgsql;
+
+
+-- 2)      Função para exclusão de um mecânico. 
+
+create or replace function exclui_mecanico(codm integer) returns void as
+$$
+declare
+	cod_a_excluir alias for $1;
+begin
+	delete from mecanico where mecanico.codm = cod_a_excluir;
+	return;
+end
+$$
+language plpgsql;
+
+-- 3)      Função única para inserção, atualizar e exclusão de um cliente.
+create or replace function cud_cliente(opt integer, pcodc integer, cpf char(11), nome varchar(50), idade integer, endereco varchar(500), cidade varchar(500)) returns void as
+$$
+declare
+	pcodc alias for $2;
+	opt alias for $1;
+begin
+	-- 0 Insere
+	if opt=0 then
+		select 1 + max(codc) from cliente into pcodc;
+		insert into cliente (codc, cpf, nome, idade, endereco, cidade) values (pcodc, $3, $4, $5, $6, $7);
+	end if;
+	-- 1 Atualiza
+	if opt = 1 then
+		update cliente set
+		cpf = $3,
+		nome = $4,
+		idade = $5,
+		endereco = $6,
+		cidade = $7
+		where cliente.codc = pcodc;
+	end if;
+	-- 2 Exclui
+	if opt = 2 then
+		delete from cliente where codc = pcodc;
+	end if;
+end
+$$
+language plpgsql;
+
+-- select * from cliente
+-- select cud_cliente(0, 412421421, '01234567891', 'Joao Ninguem', 25, 'aofjojfoawj', 'jfiajiajdisa');
+-- select cud_cliente(1, 8, '01234567891', 'Joao Ninguem da Silva', 25, 'aofjojfoawj', 'jfiajiajdisa');
+-- select cud_cliente(2, 8, '01234567891', 'Joao Ninguem da Silva', 25, 'aofjojfoawj', 'jfiajiajdisa');
+
+-- 4)      Função que limite o cadastro de no máximo 10 setores na oficina mecânica.
+
+create function max_setores() returns boolean as
+$$
+begin
+	if (select count(*) from setor) >= 10 then
+    		return false;
+	end if;
+	return true;
+end
+$$
+language plpgsql;
+
+-- 5)      Função que limita o cadastro de um conserto apenas se o mecânico não tiver mais de 3 consertos agendados para o mesmo dia.
+
+create or replace function pode_agendar_conserto(cod_mec int, data_conserto date)
+returns boolean as $$
+declare
+  total int;
+begin
+  select count(*) INTO total
+  from conserto
+  where codm = cod_mec and data = data_conserto;
+
+  return total < 3;
+end;
+$$ language plpgsql;
+
+-- 6)      Função para calcular a média geral de idade dos Mecânicos e Clientes.
+create or replace function media_geral() returns real as
+$$
+declare
+	soma_idade_cliente integer := sum(idade) from mecanico;
+	soma_idade_mecanico integer := sum (idade) from cliente;
+	qtd_clientes integer := count(*) from cliente;
+	qtd_mecanicos integer := count(*) from mecanico;
+begin
+	return (soma_idade_cliente + soma_idade_mecanico)/(qtd_clientes + qtd_mecanicos);
+end
+$$
+language plpgsql;
+
+-- 7)      Função única que permita fazer a exclusão de um Setor, Mecânico, Cliente ou Veículo.
+
+create or replace function exclui(tabela integer, codigo integer) returns void as
+$$
+declare 
+	tabela alias for $1;
+begin
+	if tabela = 0 then
+        delete from setor where cods = codigo;
+    elsif tabela = 1 then
+        delete from mecanico where codm = codigo;
+    elsif tabela = 2 then
+        delete from cliente where codc = codigo;
+    elsif tabela = 3 then
+        delete from veiculo where codv = codigo;
+    end if;
+	return;
+end
+$$
+language plpgsql;
+
+/*
+8)      Considerando que na tabela Cliente apenas codc é a chave primária, faça uma 
+função que remova clientes com CPF repetido, deixando apenas um cadastro para cada CPF.
+Escolha o critério que preferir para definir qual cadastro será mantido: aquele com a menor
+idade, que possuir mais consertos agendados, etc. Para testar a função, não se esqueça de
+inserir na tabela alguns clientes com este problema.
+*/
+
+-- insert into cliente (codc, cpf, nome, idade, endereco, cidade) values (8, '71000111000', 'fulano', 20, 'abcde', 'fghi');
+-- insert into cliente (codc, cpf, nome, idade, endereco, cidade) values (9, '22000200000', 'fulano', 20, 'abcde', 'fghi');
+
+create or replace function exclui_repeticoes_cpf() returns void as
+$$
+declare
+	i int;
+begin
+create temporary table clientes (
+	codc int primary key,
+	cpf varchar(11)
+);
+
+create temporary table clientes_sem_rep (
+	codc int primary key,
+	cpf varchar(11)
+);
+
+insert into clientes (codc, cpf) select codc, cpf from cliente;
+insert into clientes_sem_rep (codc, cpf) select min(codc), cpf from cliente * group by (cpf);
+
+for i in select codc from clientes except select codc from clientes_sem_rep
+loop
+	delete from cliente where codc = i;
+end loop;
+end
+$$
+language plpgsql
+
+-- 9) Função que valida CPFs
+
+create or replace function validaCPF(cpf_input CHAR(11))
+returns BOOLEAN AS $$
+DECLARE
+  i int;
+  soma int;
+  dig1 int;
+  dig2 int;
+  resto int;
+begin
+
+  soma := 0;
+  for i in 1..9 loop
+    soma := soma + (CAST(SUBSTRING(cpf_input, i, 1) AS INTEGER) * (11 - i));
+  end loop;
+  resto := soma % 11;
+  dig1 := case when resto < 2 then 0 else 11 - resto end;
+
+  soma := 0;
+  for i in 1..9 loop
+    soma := soma + (CAST(SUBSTRING(cpf_input, i, 1) AS INTEGER) * (12 - i));
+  end loop;
+  soma := soma + dig1 * 2;
+  resto := soma % 11;
+  dig2 := case when resto < 2 then 0 else 11 - resto end;
+
+  RETURN dig1 = CAST(SUBSTRING(cpf_input, 10, 1) AS INTEGER)
+     AND dig2 = CAST(SUBSTRING(cpf_input, 11, 1) AS INTEGER);
+end;
+$$ language plpgsql;
+
+-- 10) Função para calcular horas extras de um mecânico no mês
+
+create or replace function calcular_horas_extras(cod_mec int, mes int, ano int)
+returns int as $$
+declare
+  total_consertos int;
+  horas_extras int;
+begin
+  select count(*) into total_consertos
+  from conserto
+  where codm = cod_mec and extract(month from data) = mes and extract(year from data) = ano;
+
+  if total_consertos > 160 then
+    horas_extras := total_consertos - 160;
+  else
+    horas_extras := 0;
+  end if;
+
+  return horas_extras;
+end;
+$$ language plpgsql;
