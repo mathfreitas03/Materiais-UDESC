@@ -1,0 +1,114 @@
+CREATE DATABASE controleuniversidade
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LOCALE_PROVIDER = 'libc'
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;
+
+create table pessoa (
+  matricula integer primary key,
+  nome varchar(100),
+  idade integer
+);
+
+create table especialidade (
+  id integer primary key,
+  nome varchar(100)
+);
+
+create table professor (
+  matricula integer primary key references pessoa(matricula),
+  especialidade integer,
+  foreign key (especialidade) references especialidade(id),
+  num_sala integer,
+  bloco integer,
+  foreign key (bloco, num_sala) references sala (bloco, num_sala)
+);
+
+create table sala (
+  num_sala integer,
+  bloco integer,
+  primary key(num_sala, bloco)
+);
+
+create table escritorio (
+	id integer primary key,
+	endereco varchar(255)
+)
+
+create table departamento (
+	id integer primary key,
+	nome varchar(100),
+	lider integer,
+	foreign key (lider) references professor(matricula),
+	escritorio integer,
+	foreign key (escritorio) references escritorio(id)
+)
+
+create table professordepartamento (
+	matricula integer,
+	id_departamento integer,
+	foreign key (matricula) references professor(matricula),
+	foreign key (id_departamento) references departamento(id),
+	primary key (matricula, id_departamento)
+);
+
+create table tipo_curso (
+	id integer primary key,
+	nome varchar(50)
+);
+
+create table estudante (
+	matricula integer primary key,
+	foreign key (matricula) references pessoa(matricula),
+	id_departamento integer,
+	foreign key (id_departamento) references departamento(id),
+	aconselhador integer,
+	foreign key (aconselhador) references estudante(matricula),
+	tipo_curso integer,
+	foreign key (tipo_curso) references tipo_curso(id)
+);
+
+create table aconselhador (
+	matricula_aconselhador int,
+	foreign key (matricula_aconselhador) references estudante (matricula),
+	matricula_aconselhado int,
+	foreign key (matricula_aconselhado) references estudante (matricula),
+	primary key (matricula_aconselhador, matricula_aconselhado)
+);
+
+create table orgao (
+	id integer primary key,
+	nome varchar(100)
+);
+
+create table projeto (
+	id integer primary key,
+	gerente integer,
+	foreign key (gerente) references professor (matricula),
+	data_inicio DATE,
+	data_fim DATE,
+	orcamento real,
+	orgao integer,
+	foreign key (orgao) references orgao (id)
+);
+
+create table professorprojeto (
+	matricula integer,
+	foreign key (matricula) references professor (matricula),
+	id_projeto integer,
+	foreign key (id_projeto) references projeto (id),
+	primary key (matricula, id_projeto)
+);
+
+create table assistencia (
+	supervisor integer,
+	foreign key (supervisor) references professor (matricula),
+	matricula_estudante integer,
+	foreign key (matricula_estudante) references estudante (matricula),
+	id_projeto integer,
+	foreign key (id_projeto) references projeto (id),
+	primary key (supervisor, matricula_estudante, id_projeto)
+);
+
