@@ -1,0 +1,14 @@
+Comando para iniciar as simulações em paralelo:
+No Windows:
+
+start /B python ant_clustering_final.py 0
+start /B python ant_clustering_final.py 1
+start /B python ant_clustering_final.py 2
+start /B python ant_clustering_final.py 3
+
+No Linux:
+
+python ant_clustering_final.py 0 &
+python ant_clustering_final.py 1 &
+python ant_clustering_final.py 2 &
+python ant_clustering_final.py 3 &
