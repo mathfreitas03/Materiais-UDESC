@@ -1,0 +1,67 @@
+Usando threads
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 33.24151659011841
+=============================
+
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 5.140958070755005
+=============================
+
+Usando multiprocessing contando até 100.000.000
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 6.832979440689087
+=============================
+
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 5.325390338897705
+=============================
+
+Multiprocessing contando até 1.000.000.000 
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 66.54263877868652
+=============================
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 52.20568823814392
+=============================
+
+Threads contando até 1.000.000.000
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 335.5024013519287
+=============================
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 52.823545932769775
+=============================
+
+Multiprocessing VS Threads
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 6.807405233383179
+=============================
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 5.249898672103882
+=============================
+
+Contando até 1.000.000.000
+
+GIL habilitado: True
+Número de núcleos usados: 11
+Tempo decorrido: 67.00487780570984
+=============================
+GIL habilitado: False
+Número de núcleos usados: 11
+Tempo decorrido: 52.16054081916809
+=============================
